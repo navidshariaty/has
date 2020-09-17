@@ -122,11 +122,37 @@ class Ansible:
 
 
 class Email:
-    def __init__(self, emails):
-        self.emails = emails
+    def __init__(self, *args):
+        valid = True if (args and len(args) and isinstance(args[0], dict)) else False
+        tmp_args = args[0] if valid else {}
+        self.to_addr = tmp_args.get("to_addr")
+        self.host = tmp_args.get("smtp_host")
+        self.port = tmp_args.get("smtp_port")
+        self.use_ssl = tmp_args.get("use_ssl")
+        self.username = tmp_args.get("username")
+        self.password = tmp_args.get("password")
+        self.from_addr = tmp_args.get("from_addr")
 
     def action_checkup(self):
-        pass
+        """
+        required options are [smpt_host, smtp_port, from_addr, to_addr]
+        :return:
+        """
+        results = dict({"valid_username": True, "valid_password": True, "valid_ssl": True})
+        results.update({"valid_host": True if (self.host and isinstance(self.host, str)) else False})
+        results.update({"valid_port": True if (self.port and str(self.port).isnumeric()) else False})
+        results.update({"valid_from": True if (self.from_addr and isinstance(self.from_addr, str)) else False})
+        results.update({"valid_dest": True if (self.to_addr and isinstance(self.to_addr, str)) else False})
+        if self.use_ssl:
+            results.update({"valid_ssl": True if (self.use_ssl and str(self.use_ssl).lower() in ["true", "false"]) else False})
+        if self.username:
+            results.update({"valid_username": True if isinstance(self.username, str) else False})
+        if self.password:
+            results.update({"valid_password": True if isinstance(self.password, str) else False})
+        for key in results:
+            if not results[key]:
+                return "Error on field \"{}\" => value \"{}\" not acceptable.".format(key, results[key]), False
+        return "", True
 
     def run_action(self):
         pass
