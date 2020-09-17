@@ -160,23 +160,32 @@ class Email:
 
     def action_checkup(self):
         """
-        required options are [smpt_host, smtp_port, from_addr, to_addr]
+        required options are [smtp_host, smtp_port, from_addr, to_addr]
         :return:
         """
-        results = dict({"valid_username": True, "valid_password": True, "valid_ssl": True})
-        results.update({"valid_host": True if (self.host and isinstance(self.host, str)) else False})
-        results.update({"valid_port": True if (self.port and str(self.port).isnumeric()) else False})
-        results.update({"valid_from": True if (self.from_addr and isinstance(self.from_addr, str)) else False})
-        results.update({"valid_dest": True if (self.to_addr and isinstance(self.to_addr, str)) else False})
+        results = dict({"valid_username": True, "valid_password": True, "valid_use_ssl": True})
+        results.update({"valid_smtp_host": True if (self.host and isinstance(self.host, str)) else False})
+        results.update({"valid_smtp_port": True if (self.port and str(self.port).isnumeric()) else False})
+        results.update({"valid_from_addr": True if (self.from_addr and isinstance(self.from_addr, str)) else False})
+        results.update({"valid_to_addr": True if (self.to_addr and isinstance(self.to_addr, str)) else False})
         if self.use_ssl:
-            results.update({"valid_ssl": True if (self.use_ssl and str(self.use_ssl).lower() in ["true", "false"]) else False})
+            results.update({"valid_use_ssl": True if (self.use_ssl and str(self.use_ssl).lower() in ["true", "false"]) else False})
         if self.username:
             results.update({"valid_username": True if isinstance(self.username, str) else False})
         if self.password:
             results.update({"valid_password": True if isinstance(self.password, str) else False})
+        mapping = {
+            "valid_smtp_host": self.host,
+            "valid_smtp_port": self.port,
+            "valid_use_ssl": self.use_ssl,
+            "valid_username": self.username,
+            "valid_password": self.password,
+            "valid_from_addr": self.from_addr,
+            "valid_to_addr": self.to_addr
+        }
         for key in results:
             if not results[key]:
-                return "Error on field \"{}\" => value \"{}\" not acceptable.".format(key, results[key]), False
+                return "Error on field \"{}\" => value \"{}\" not acceptable.".format(key[6:], mapping.get(key)), False
         return "", True
 
     def run_action(self):
@@ -210,7 +219,7 @@ class Command:
 
     def write_results(self, start_unix_time, end_unix_time, action_completed, description):
         body = {"type": "command",
-                "command": self.command
+                "command": self.command,
                 "@timestamp": datetime.datetime.utcnow().isoformat(),
                 "action_completed": action_completed,
                 "description": description,
