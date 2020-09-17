@@ -13,6 +13,13 @@ get called independent of action type.these functions are:
         this function runs after checking actions up. used to run the action with given options
     4) write_results
         this function writes the action's options and result into elasticsearch so we will findout if an email could not be sent and we can try to send it later
+        :param start_unix_time
+        :param end_unix_time
+        :param action_completed
+        :param description
+        first two parameters are used to find out how long did the action take.the result is added to action body as field "took"
+        parameter "action_completed" is used to trace actions later and for Non-repudiation
+        parameter "description" is used for later understanding of the reason on done actions
     5) action_history
         :param start_timestamp
         :param size default 10
@@ -20,6 +27,7 @@ get called independent of action type.these functions are:
 """
 
 import os
+import datetime
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 
@@ -100,8 +108,25 @@ class Ansible:
         elif self.method == "playbook":
             self.playbook_action()
 
-    def write_results(self):
-        pass
+    def write_results(self, start_unix_time, end_unix_time, action_completed, description):
+        if self.method == "ad_hoc":
+            body = {"type": "ansible",
+                    "method": self.method,
+                    "command": self.adhoc_command,
+                    "group": self.group,
+                    "inventory": self.inventory,
+                    "@timestamp": datetime.datetime.utcnow().isoformat(),
+                    "action_completed": action_completed,
+                    "description": description,
+                    "took": end_unix_time - start_unix_time}
+        elif self.method == "playbook":
+            body = {"type": "ansible",
+                    "method": self.method,
+                    "playbooks": self.playbooks,
+                    "@timestamp": datetime.datetime.utcnow().isoformat(),
+                    "action_completed": action_completed,
+                    "description": description,
+                    "took": end_unix_time - start_unix_time}
 
     def action_history(self):
         pass
@@ -157,16 +182,25 @@ class Email:
     def run_action(self):
         pass
 
-    def write_results(self):
-        pass
+    def write_results(self, start_unix_time, end_unix_time, action_completed, description):
+        body = {"type": "email",
+                "from_email": self.from_addr,
+                "dest_email": self.to_addr,
+                "smtp server": self.host+":"+self.port,
+                "@timestamp": datetime.datetime.utcnow().isoformat(),
+                "action_completed": action_completed,
+                "description": description,
+                "took": end_unix_time - start_unix_time}
 
     def action_history(self):
         pass
 
 
 class Command:
-    def __init__(self, command):
-        self.command = command
+    def __init__(self, *args):
+        valid = True if (args and len(args) and isinstance(args[0], dict)) else False
+        tmp_args = args[0] if valid else {}
+        self.command = tmp_args.get("command")
 
     def action_checkup(self):
         pass
@@ -174,8 +208,13 @@ class Command:
     def run_action(self):
         pass
 
-    def write_results(self):
-        pass
+    def write_results(self, start_unix_time, end_unix_time, action_completed, description):
+        body = {"type": "command",
+                "command": self.command
+                "@timestamp": datetime.datetime.utcnow().isoformat(),
+                "action_completed": action_completed,
+                "description": description,
+                "took": end_unix_time - start_unix_time}
 
     def action_history(self):
         pass
