@@ -53,6 +53,9 @@ def main():
         result, state = has_handlers.sources_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
         handle_result_state(result=result, state=state)
         logger.warning("[ * ] Done fetching.\n")
+        logger.warning("[  ] pipe_type processing started.")
+
+        logger.warning("[ * ] pipe_type processing completed.")
 
 
 if __name__ == '__main__':

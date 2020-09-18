@@ -10,8 +10,9 @@ class Any:
     """
     in case of any match, an action should get triggered
     """
+    types_required_options = frozenset([])
 
-    def __init__(self, matches):
+    def __init__(self, matches, *args):
         self.matches = matches
 
     def needs_action(self):
@@ -27,8 +28,13 @@ class Frequency:
     :param action_on_equals
     if number of matched events is above a threshold , an action should get triggered
     """
+    types_required_options = frozenset(["threshold"])
 
-    def __init__(self, matches, threshold, action_on_equals=False):
+    def __init__(self, matches, *args):
+        valid = True if args and len(args) else False
+        tmp_args = args[0] if valid else {}
+        threshold = tmp_args.get("threshold")
+        action_on_equals = tmp_args.get("action_on_equals") if tmp_args.get("action_on_equals") else False
         self.action_on_equals = action_on_equals
         self.matches = matches
         self.threshold = int(threshold) if isinstance(threshold, str) else threshold
@@ -48,6 +54,7 @@ class Flatline:
     :param action_on_equals
     if number of matched events is below a threshold , an action should get triggered
     """
+    types_required_options = frozenset(["floor"])
 
     def __init__(self, matches, floor, action_on_equals=False):
         self.action_on_equals = action_on_equals
@@ -67,6 +74,7 @@ class Range:
     :param
     if number of matched events is below a threshold , an action should get triggered
     """
+    types_required_options = frozenset(["min_threshold", "max_threshold"])
 
     def __init__(self, matches, min_threshold, max_threshold, action_on_equals=False):
         self.min_threshold = int(min_threshold) if isinstance(min_threshold, str) else min_threshold
@@ -84,6 +92,8 @@ class Range:
 
 
 class HistoricalRange:
+    types_required_options = frozenset(["reference_window_matches", "current_window_matches", "compare_height", "compare_type"])
+
     def __init__(self, reference_window_matches, current_window_matches, compare_height, compare_type="both", action_on_equals=False):
         self.compare_type = compare_type
         self.compare_height = int(compare_height) if isinstance(compare_height, str) else compare_height

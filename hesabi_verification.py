@@ -10,6 +10,21 @@ sources_mapping = {
     "Prometheus": has_sources.Prometheus
 }
 
+pipe_types_mapping = {
+    "any": pipe_types.Any,
+    "frequency": pipe_types.Frequency,
+    "flatline": pipe_types.Flatline,
+    "range": pipe_types.Range,
+    "historical_range": pipe_types.HistoricalRange
+}
+
+actions_mapping = {
+    "email": actions.Email,
+    "ansible": actions.Ansible,
+    "command": actions.Command,
+    "debug": actions.Debug
+}
+
 
 class Verify:
     def __init__(self, hesabi_body, hesabi_path):
@@ -91,15 +106,31 @@ class Verify:
                 return "name \"{}\" is of type {} while should be string in hesabi \"{}\"".format(source.get("name"), type(source.get("name")), self.path), False
             if "source" not in source:
                 return "source field not found in sources of hesabi \"{}\"".format(self.path), False
-            if not source.get("source") in sources_mapping.keys():
+            if source.get("source") not in sources_mapping.keys():
                 return "Unknown Source \"{}\" used in hesabi \"{}\"".format(source.get("source"), self.path), False
             for field in sources_mapping.get(source.get("source")).required_options:
                 if field not in source:
-                    return "field \"{}\" is required and not specified in hesabi \"{}\"".format(field, self.path), False
+                    return "field \"{}\" is required and not specified in hesabi \"{}\" sources.".format(field, self.path), False
         return "", True
 
     def advanced_verify_actions(self):
+        for action in self.body.get("actions"):
+            if "action" not in action:
+                return "action field not found in actions of hesabi \"{}\"".format(self.path), False
+            if action.get("action") not in actions_mapping.keys():
+                return "Unknown action \"{}\" used in hesabi \"{}\"".format(action.get("action"), self.path), False
+            for field in actions_mapping.get(action.get("action")).action_required_options:
+                if field not in action:
+                    return "field \"{}\" is required and not specified in hesabi \"{}\" actions.".format(field, self.path), False
         return "", True
 
     def advanced_verify_pipe_type(self):
+        pipe_type_body = self.body.get("pipe_type")[0]
+        if "pipe_type" not in self.body:
+            return "pipe_type field not found in hesabi \"{}\"".format(self.path), False
+        if pipe_type_body.get("type") not in pipe_types_mapping.keys():
+            return "Unknown pipe_type \"{}\" used in hesabi \"{}\"".format(pipe_type_body.get("type"), self.path), False
+        for field in pipe_types_mapping.get(pipe_type_body.get("type")).types_required_options:
+            if field not in pipe_type_body:
+                return "field \"{}\" is required and not specified in hesabi \"{}\" pipe_type.".format(field, self.path), False
         return "", True

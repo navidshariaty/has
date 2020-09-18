@@ -5,11 +5,16 @@ sources:
   es_host: 192.168.5.104
   es_port: 9200
   index:
-  - meticbeat*
+  - metricbeat*
+  filters:
+  - match:
+      "_id": "7qvxm3QBhFswA17vazfv"
 
 actions:
 - action: debug
 
 pipe_type:
-- type: Any
+- type: frequency
+  threshold: 10
+ 
 disable_hesabi: false

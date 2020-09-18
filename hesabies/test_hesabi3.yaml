@@ -2,19 +2,19 @@ hesabi_uuid: 3
 sources:
 - source: ElasticSearch
   name: test
-  es_host: 127.0.0.1
+  es_host: 192.168.5.104
   es_port: 9200
   index:
   - meticbeat*
 - source: ElasticSearch
   name: test3
-  es_host: 127.0.0.1
+  es_host: 192.168.5.104
   es_port: 9200
   index:
   - meticbeat*
 - source: ElasticSearch
   name: test2
-  es_host: 127.0.0.1
+  es_host: 192.168.5.104
   es_port: 9200
   index:
   - meticbeat*
@@ -24,3 +24,4 @@ actions:
 
 pipe_type:
 - type: Any
+disable_hesabi: true

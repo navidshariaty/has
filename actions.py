@@ -54,6 +54,8 @@ def find_inventories_group_hosts(inventory, group):
 
 
 class Ansible:
+    action_required_options = frozenset([])
+
     def __init__(self, *args):
         valid = True if (args and len(args) and isinstance(args[0], dict)) else False
         tmp_args = args[0] if valid else {}
@@ -147,6 +149,8 @@ class Ansible:
 
 
 class Email:
+    action_required_options = frozenset([])
+
     def __init__(self, *args):
         valid = True if (args and len(args) and isinstance(args[0], dict)) else False
         tmp_args = args[0] if valid else {}
@@ -206,6 +210,8 @@ class Email:
 
 
 class Command:
+    action_required_options = frozenset([])
+
     def __init__(self, *args):
         valid = True if (args and len(args) and isinstance(args[0], dict)) else False
         tmp_args = args[0] if valid else {}
@@ -228,3 +234,21 @@ class Command:
     def action_history(self):
         pass
 
+
+class Debug:
+    action_required_options = frozenset([])
+
+    def __init__(self):
+        self.debug = True
+
+    def action_checkup(self):
+        return "", True
+
+    def run_action(self):
+        return "", True
+
+    def write_results(self):
+        pass
+
+    def action_history(self):
+        pass
