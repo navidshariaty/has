@@ -51,15 +51,20 @@ def main():
     logger.warning("[ * ] all hesabies verified\n")
     for hesabi in hesabies:
         logger.warning("[  ] fetching data from sources of hesabi {}".format(hesabi))
-        result, state = has_handlers.sources_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
+        statistics, result, state = has_handlers.sources_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
         handle_result_state(result=result, state=state)
         logger.warning("[ * ] Done fetching.\n")
         logger.warning("[  ] pipe_type processing started.")
-        logger.warning("received a total number of \"{}\" matches.".format(result))
+        logger.warning("received a total number of \"{}\" matches:".format(result))
+        for statistic in statistics:
+            logger.warning(statistic + ": " + str(statistics[statistic]))
         result = has_handlers.pipe_type_handler(hesabi, hesabies.get(hesabi), result)
         handle_result_state("an action was not needed.", result, exit_on_errors=False)
         logger.warning("[ * ] pipe_type processing completed.")
         logger.warning("[  ] triggering actions started.")
+        if has_handlers.should_perform_aggr_query(hesabi_body=hesabies.get(hesabi)):
+            statistics, result, state = has_handlers.aggr_field_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
+        # result = has_handlers.actions_handler(hesabi, result)
         logger.warning("[ * ] actions triggered.")
 
 

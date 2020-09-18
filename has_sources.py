@@ -73,6 +73,38 @@ class ElasticSearch:
             results = int(results["hits"]["total"]["value"])
         return results
 
+    def get_query_aggr_field(self, start_time=None, end_time=None, agg_field=None, *args):
+        valid = True if args and len(args) else False
+        tmp_args = args[0] if valid else {}
+        filters = tmp_args.get("filters") if tmp_args.get("filters") else []
+        sort = tmp_args.get("sort") if tmp_args.get("sort") else False
+        desc = tmp_args.get("desc") if tmp_args.get("desc") else False
+        es_filters = {'filter': {'bool': {'must': filters}}}
+        start_time = tmp_args.get("start_time")
+        if agg_field:
+            agg_field2 = tmp_args.get("agg_field")
+            if agg_field2:
+                agg_field = agg_field2
+        agg_size = tmp_args.get("agg_size") if tmp_args.get("agg_size") else 10
+        if start_time:
+            end_time = datetime.datetime.utcnow().isoformat()
+        if start_time and end_time:
+            es_filters['filter']['bool']['must'].insert(0, {'range': {"@timestamp": {'gt': start_time, 'lte': end_time}}})
+        query = {'query': {'bool': es_filters}, "aggs": {"NAME": {"terms": {"field": agg_field, "size": agg_size}}}}
+        if sort:
+            query['sort'] = [{"@timestamp": {'order': 'desc' if desc else 'asc'}}]
+        return query
+
+    def get_results_aggr_field(self, conn, query, *args):
+        valid = True if args and len(args) else False
+        tmp_args = args[0] if valid else {}
+        index = tmp_args.get("index")
+        results = conn.search(index=index, body=query, size=0, ignore_unavailable=True)
+        agg_field_values = []
+        for result in results["aggregations"]["NAME"]["buckets"]:
+            agg_field_values.append(result.get("key"))
+        return agg_field_values
+
 
 class Prometheus:
     required_options = frozenset([""])
@@ -89,6 +121,12 @@ class Prometheus:
     def get_result(self):
         pass
 
+    def get_query_aggr_field(self):
+        pass
+
+    def get_results_aggr_field(self):
+        pass
+
 
 class Zabbix:
     required_options = frozenset([""])
@@ -103,4 +141,10 @@ class Zabbix:
         pass
 
     def get_result(self):
+        pass
+
+    def get_query_aggr_field(self):
+        pass
+
+    def get_results_aggr_field(self):
         pass

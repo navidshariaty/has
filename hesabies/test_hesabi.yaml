@@ -9,16 +9,20 @@ sources:
   filters:
   - match:
       "_id": "7qvxm3QBhFswA17vazfv"
+  agg_size: 12
 - source: ElasticSearch
   name: name2
   es_host: 192.168.5.104
   es_port: 9200
   index:
   - metricbeat*
+  agg_size: 20
   start_time: "2020-09-11T12:01:58.801Z"
 #  filters:
 #  - match:
 #      "_id": "8Kvxm3QBhFswA17vazfv"
+
+agg_field: event.duration
 
 actions:
 - action: debug
