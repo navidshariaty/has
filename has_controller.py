@@ -62,6 +62,7 @@ def main():
         handle_result_state("an action was not needed.", result, exit_on_errors=False)
         logger.warning("[ * ] pipe_type processing completed.")
         logger.warning("[  ] triggering actions started.")
+
         if has_handlers.should_perform_aggr_query(hesabi_body=hesabies.get(hesabi)):
             statistics, result, state = has_handlers.aggr_field_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
         # result = has_handlers.actions_handler(hesabi, result)

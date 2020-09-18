@@ -28,8 +28,12 @@ get called independent of action type.these functions are:
 
 import os
 import datetime
+from email.mime.text import MIMEText
+from email.utils import formatdate
+from smtplib import *
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
+from socket import error
 
 
 def lost_file_finder(files, exist_only=True, file_only=False):
@@ -149,7 +153,7 @@ class Ansible:
 
 
 class Email:
-    action_required_options = frozenset([])
+    action_required_options = frozenset(["smtp_host", "smtp_port", "from_addr", "to_addr", "title"])
 
     def __init__(self, *args):
         valid = True if (args and len(args) and isinstance(args[0], dict)) else False
@@ -161,11 +165,14 @@ class Email:
         self.username = tmp_args.get("username")
         self.password = tmp_args.get("password")
         self.from_addr = tmp_args.get("from_addr")
+        self.title = tmp_args.get("title")
+        self.cert_file = tmp_args.get("cert_file")
+        self.key_file = tmp_args.get("key_file")
 
     def action_checkup(self):
         """
         required options are [smtp_host, smtp_port, from_addr, to_addr]
-        :return:
+        :return err_content, err_free
         """
         results = dict({"valid_username": True, "valid_password": True, "valid_use_ssl": True})
         results.update({"valid_smtp_host": True if (self.host and isinstance(self.host, str)) else False})
@@ -174,10 +181,19 @@ class Email:
         results.update({"valid_to_addr": True if (self.to_addr and isinstance(self.to_addr, str)) else False})
         if self.use_ssl:
             results.update({"valid_use_ssl": True if (self.use_ssl and str(self.use_ssl).lower() in ["true", "false"]) else False})
+        if self.cert_file:
+            results.update({"valid_cert_file": True if (self.cert_file and os.path.isfile(self.cert_file)) else False})
+
+        if self.key_file:
+            results.update({"valid_key_file": True if (self.key_file and os.path.isfile(self.key_file)) else False})
+
         if self.username:
             results.update({"valid_username": True if isinstance(self.username, str) else False})
         if self.password:
             results.update({"valid_password": True if isinstance(self.password, str) else False})
+        if self.title:
+            results.update({"valid_title": True if isinstance(self.title, str) else False})
+
         mapping = {
             "valid_smtp_host": self.host,
             "valid_smtp_port": self.port,
@@ -185,7 +201,10 @@ class Email:
             "valid_username": self.username,
             "valid_password": self.password,
             "valid_from_addr": self.from_addr,
-            "valid_to_addr": self.to_addr
+            "valid_to_addr": self.to_addr,
+            "valid_title": self.title,
+            "valid_key_file": self.key_file,
+            "valid_cert_file": self.cert_file
         }
         for key in results:
             if not results[key]:
@@ -193,7 +212,35 @@ class Email:
         return "", True
 
     def run_action(self):
-        pass
+        body = "HESABI TRIGGER"
+        email_msg = MIMEText(body, _charset='UTF-8')
+        email_msg['Subject'] = self.title
+        email_msg['To'] = self.to_addr
+        email_msg['From'] = self.from_addr
+        email_msg['Date'] = formatdate()
+        try:
+            if self.use_ssl:
+                if self.port:
+                    self.smtp = SMTP_SSL(self.host, self.port, keyfile=self.key_file, certfile=self.cert_file)
+                else:
+                    self.smtp = SMTP_SSL(self.host, keyfile=self.key_file, certfile=self.cert_file)
+            else:
+                if self.port:
+                    self.smtp = SMTP(self.host, self.port)
+                else:
+                    self.smtp = SMTP(self.host)
+                self.smtp.ehlo()
+                if self.smtp.has_extn('STARTTLS'):
+                    self.smtp.starttls(keyfile=self.key_file, certfile=self.cert_file)
+            if self.username and self.password:
+                self.smtp.login(self.username, self.password)
+        except (SMTPException, error) as e:
+            return "Error connecting to SMTP host: {}".format(e), False
+        except SMTPAuthenticationError as e:
+            return "SMTP username/password rejected: {}".format(e), False
+        self.smtp.sendmail(self.from_addr, self.to_addr, email_msg.as_string())
+        self.smtp.quit()
+        return "", True
 
     def write_results(self, start_unix_time, end_unix_time, action_completed, description):
         body = {"type": "email",
@@ -210,7 +257,7 @@ class Email:
 
 
 class Command:
-    action_required_options = frozenset([])
+    action_required_options = frozenset(["command"])
 
     def __init__(self, *args):
         valid = True if (args and len(args) and isinstance(args[0], dict)) else False
@@ -218,10 +265,14 @@ class Command:
         self.command = tmp_args.get("command")
 
     def action_checkup(self):
-        pass
+        if not isinstance(self.command, list):
+            return "field \"command\" should be of type list.", False
+        return "", True
 
     def run_action(self):
-        pass
+        status = os.system(command=self.command)
+        message = "Problems while running command \"{}\"".format(self.command) if status else ""
+        return message, status
 
     def write_results(self, start_unix_time, end_unix_time, action_completed, description):
         body = {"type": "command",

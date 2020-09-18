@@ -111,6 +111,9 @@ class Verify:
             for field in sources_mapping.get(source.get("source")).required_options:
                 if field not in source:
                     return "field \"{}\" is required and not specified in hesabi \"{}\" sources.".format(field, self.path), False
+            if "agg_field" in source:
+                if "agg_field" not in self.body:
+                    return "field \"agg_field\" specified in source \"{}\" of hesabi \"{}\" but not in the body.".format(source.get("name"), self.path), False
         return "", True
 
     def advanced_verify_actions(self):

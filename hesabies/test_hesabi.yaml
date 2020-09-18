@@ -22,7 +22,7 @@ sources:
 #  - match:
 #      "_id": "8Kvxm3QBhFswA17vazfv"
 
-agg_field: event.duration
+#agg_field: event.duration
 
 actions:
 - action: debug
