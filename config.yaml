@@ -1,0 +1,23 @@
+hesabies_path: /home/navid/PycharmProjects/has/hesabies
+
+sources: 
+- source: elasticsearch
+  es_host: 127.0.0.1
+  es_port: 9200
+  es_use_ssl: false
+  es_verify_certs: false
+  es_ca_certs: ""
+
+
+actions:
+- action: email
+  from_addr: "from@gmail.com"
+  to_addr: "to@gmail.com"
+  smtp_host: "smtp server"
+  smtp_port: "smtp port"
+- action: ansible
+  method: "ad_hoc"
+  group: "all"
+  inventory: "/etc/ansible/hosts"
+  ad_hoc_command: "-m ping"
+
