@@ -1,5 +1,7 @@
+hesabi_uuid: 2
 sources:
 - source: ElasticSearch
+  name: test
   es_host: 192.168.5.104
   es_port: 9200
   index:

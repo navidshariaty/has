@@ -43,7 +43,10 @@ def load_hesabi_bodies(hesabies_path):
     for hesabi_path in os.listdir(hesabies_path):
         try:
             tmp_content = load_hesabi_body(os.path.join(hesabies_path, hesabi_path))
-            hesabi_bodies.update({hesabi_path: tmp_content})
+            if tmp_content.get("disable_hesabi"):
+                pass
+            else:
+                hesabi_bodies.update({hesabi_path: tmp_content})
         except:
             return "could not load hesabi {}".format(hesabi_path), False
     return hesabi_bodies, True

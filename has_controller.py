@@ -3,7 +3,7 @@ import hesabs
 import has_view
 import sys
 import logging
-import hesabi_verification
+import has_handlers
 
 
 logging_mapping = {
@@ -41,15 +41,18 @@ def main():
     logger_level = logging_mapping.get(config_content.get("logging_level")) if "logging_level" in config_content else logging.INFO
     logger.setLevel(logger_level)
     hesabies, state = hesabs.load_hesabi_bodies(config_content.get("hesabies_path"))
-    logger.warning("[ * ] {} hesabies loaded.".format(len(hesabies)))
+    logger.warning("[ * ] {} hesabies loaded.\n".format(len(hesabies)))
     handle_result_state(result=hesabies, state=state)
     for hesabi_path in hesabies:
         result, state = hesabs.verify_hesabi(hesabi_path=hesabi_path, hesabi_content=hesabies.get(hesabi_path))
         handle_result_state(result=result, state=state)
         logger.warning("hesabi \"{}\" verified.".format(hesabi_path))
-    logger.warning("[ * ] all hesabies verified")
+    logger.warning("[ * ] all hesabies verified\n")
     for hesabi in hesabies:
-
+        logger.warning("[  ] fetching data from sources of hesabi {}".format(hesabi))
+        result, state = has_handlers.sources_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
+        handle_result_state(result=result, state=state)
+        logger.warning("[ * ] Done fetching.\n")
 
 
 if __name__ == '__main__':

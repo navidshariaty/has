@@ -10,6 +10,7 @@ sources_mapping = {
     "Prometheus": has_sources.Prometheus
 }
 
+
 class Verify:
     def __init__(self, hesabi_body, hesabi_path):
         self.body = hesabi_body
@@ -18,6 +19,8 @@ class Verify:
     def verifier(self):
         if not self.body:
             return "Empty body for hesabi \"{}\"".format(self.path), False
+        if not self.body.get("hesabi_uuid"):
+            return "hesabi \"{}\" does not contain an uuid.".format(self.path), False
         result, state = self.basic_verify()
         if not state:
             return result, state
@@ -76,8 +79,17 @@ class Verify:
             return "", True
 
     def advanced_verify_sources(self):
+        all_names = []
         for source in self.body.get("sources"):
-            if not "source" in source:
+            if "name" not in source:
+                return "source does not contain name in hesabi {}".format(self.path), False
+            if isinstance(source.get("name"), str):
+                if source.get("name") in all_names:
+                    return "name \"{}\" already exists in hesabi {}".format(source.get("name"), self.path), False
+                all_names.append(source.get("name"))
+            else:
+                return "name \"{}\" is of type {} while should be string in hesabi \"{}\"".format(source.get("name"), type(source.get("name")), self.path), False
+            if "source" not in source:
                 return "source field not found in sources of hesabi \"{}\"".format(self.path), False
             if not source.get("source") in sources_mapping.keys():
                 return "Unknown Source \"{}\" used in hesabi \"{}\"".format(source.get("source"), self.path), False

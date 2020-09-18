@@ -19,9 +19,9 @@ class View:
                 return self.print_stderr_content()
 
     def print_stdout_content(self):
-        print(self.content, file=sys.stdout)
+        print("[ * ]", self.content, file=sys.stdout)
         return self.content
 
     def print_stderr_content(self):
-        print(self.content, file=sys.stderr)
+        print("[ - ]", self.content, file=sys.stderr)
         return self.content

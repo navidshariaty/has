@@ -1,5 +1,19 @@
+hesabi_uuid: 3
 sources:
 - source: ElasticSearch
+  name: test
+  es_host: 127.0.0.1
+  es_port: 9200
+  index:
+  - meticbeat*
+- source: ElasticSearch
+  name: test3
+  es_host: 127.0.0.1
+  es_port: 9200
+  index:
+  - meticbeat*
+- source: ElasticSearch
+  name: test2
   es_host: 127.0.0.1
   es_port: 9200
   index:
