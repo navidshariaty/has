@@ -1,6 +1,29 @@
 import argparse
 import hesabs
 import has_view
+import sys
+import logging
+import hesabi_verification
+
+
+logging_mapping = {
+    "not_set": logging.NOTSET,
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+    "critical": logging.CRITICAL
+}
+
+
+def build_logger():
+    return logging.Logger("HAS")
+
+
+def handle_result_state(result, state):
+    has_view.View(result, state, only_view_on_errors=True)
+    if not state:
+        sys.exit()
 
 
 def parse_args():
@@ -12,12 +35,20 @@ def parse_args():
 def main():
     args = parse_args()
     config_content, state = hesabs.load_config(args.config)
-    has_view.View(config_content, state, only_view_on_errors=True)
-    if not state:
-        exit(1)
+    handle_result_state(result=config_content, state=state)
+    logger = build_logger()
+    logging.basicConfig(level=logging.DEBUG)
+    logger_level = logging_mapping.get(config_content.get("logging_level")) if "logging_level" in config_content else logging.INFO
+    logger.setLevel(logger_level)
     hesabies, state = hesabs.load_hesabi_bodies(config_content.get("hesabies_path"))
-    has_view.View(hesabies, state, only_view_on_errors=True)
-
+    logger.warning("[ * ] {} hesabies loaded.".format(len(hesabies)))
+    handle_result_state(result=hesabies, state=state)
+    for hesabi_path in hesabies:
+        result, state = hesabs.verify_hesabi(hesabi_path=hesabi_path, hesabi_content=hesabies.get(hesabi_path))
+        handle_result_state(result=result, state=state)
+        logger.warning("hesabi \"{}\" verified.".format(hesabi_path))
+    logger.warning("[ * ] all hesabies verified")
+    for hesabi in hesabies:
 
 
 

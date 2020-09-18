@@ -1,5 +1,5 @@
 """
-this module includes classes that define sources to read input from
+this module has a class for connecting to databases of monitoring tools, perform queries and fetch results
 each class should have a variable "required_options" contains all required fields for verification process
 """
 
@@ -7,7 +7,7 @@ import elasticsearch
 
 
 class ElasticSearch:
-    required_options = frozenset(["es_host", "es_port"])
+    required_options = frozenset(["es_host", "es_port", "index"])
 
     def __init__(self, host, port, use_ssl=False, verfiy_certs=False, ca_certs=None, http_auth=None, timeout=10):
         self.host = host
@@ -37,6 +37,19 @@ class ElasticSearch:
     def get_result(self, es_conn, index, size, query, count_query=False):
         if count_query:
             results = es_conn.count(index=index, body=query, size=size, ignore_unavailable=True)
-            print()
         else:
             results = es_conn.search(index=index, body=query, size=size, ignore_unavailable=True)
+
+
+class Prometheus:
+    required_options = frozenset([""])
+
+    def __init__(self):
+        pass
+
+
+class Zabbix:
+    required_options = frozenset([""])
+
+    def __init__(self):
+        pass

@@ -12,6 +12,7 @@ each hesabi is a yaml file with contents of
 """
 import os
 from staticconf.loader import yaml_loader
+import hesabi_verification
 
 
 def load_config(config_path):
@@ -44,5 +45,11 @@ def load_hesabi_bodies(hesabies_path):
             tmp_content = load_hesabi_body(os.path.join(hesabies_path, hesabi_path))
             hesabi_bodies.update({hesabi_path: tmp_content})
         except:
-            print("could not load hesabi {}".format(hesabi_path))
+            return "could not load hesabi {}".format(hesabi_path), False
     return hesabi_bodies, True
+
+
+def verify_hesabi(hesabi_content, hesabi_path):
+    instance_verify = hesabi_verification.Verify(hesabi_body=hesabi_content, hesabi_path=hesabi_path)
+    return instance_verify.verifier()
+

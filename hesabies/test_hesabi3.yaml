@@ -1,0 +1,12 @@
+sources:
+- source: ElasticSearch
+  es_host: 127.0.0.1
+  es_port: 9200
+  index:
+  - meticbeat*
+
+actions:
+- action: debug
+
+pipe_type:
+- type: Any
