@@ -10,19 +10,25 @@ def source_handler(source):
 
 
 def sources_handler(hesabi_name, hesabi_body):
-    all_matches = []
+    all_matches = 0
     for source in hesabi_body.get("sources"):
         result, state = source_handler(source)
         if not state:
             return result, state
-        all_matches.append(result)
+        all_matches += result
     return all_matches, True
 
 
-def pipe_type_handler(hesabi, matches):
-    pipe_type_body = hesabi.get("pipe_type")[0]
-    pipe_type_instance = pipe_types_mapping.get(pipe_type_body.get("type"))(pipe_type_body)
+def pipe_type_handler(hesabi_name, hesabi_body, matches):
+    pipe_type_body = hesabi_body.get("pipe_type")[0]
+    pipe_type_instance = pipe_types_mapping.get(pipe_type_body.get("type"))(matches, pipe_type_body)
+    state = pipe_type_instance.needs_action()
+    return state
 
 
 def action_handler(hesabi, matches):
+    pass
+
+
+def actions_handler(hesabi, matches):
     pass

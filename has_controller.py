@@ -20,10 +20,11 @@ def build_logger():
     return logging.Logger("HAS")
 
 
-def handle_result_state(result, state):
+def handle_result_state(result, state, exit_on_errors=True):
     has_view.View(result, state, only_view_on_errors=True)
     if not state:
-        sys.exit()
+        if exit_on_errors:
+            sys.exit()
 
 
 def parse_args():
@@ -54,8 +55,12 @@ def main():
         handle_result_state(result=result, state=state)
         logger.warning("[ * ] Done fetching.\n")
         logger.warning("[  ] pipe_type processing started.")
-
+        logger.warning("received a total number of \"{}\" matches.".format(result))
+        result = has_handlers.pipe_type_handler(hesabi, hesabies.get(hesabi), result)
+        handle_result_state("an action was not needed.", result, exit_on_errors=False)
         logger.warning("[ * ] pipe_type processing completed.")
+        logger.warning("[  ] triggering actions started.")
+        logger.warning("[ * ] actions triggered.")
 
 
 if __name__ == '__main__':

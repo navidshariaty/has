@@ -42,7 +42,7 @@ class Frequency:
             self.threshold -= 1
 
     def needs_action(self):
-        if len(self.matches) > self.threshold:
+        if self.matches > self.threshold:
             return True
         return False
 
@@ -56,7 +56,11 @@ class Flatline:
     """
     types_required_options = frozenset(["floor"])
 
-    def __init__(self, matches, floor, action_on_equals=False):
+    def __init__(self, matches, *args):
+        valid = True if args and len(args) else False
+        tmp_args = args[0] if valid else {}
+        floor = tmp_args.get("floor")
+        action_on_equals = tmp_args.get("action_on_equals") if tmp_args.get("action_on_equals") else False
         self.action_on_equals = action_on_equals
         self.matches = matches
         self.floor = int(floor) if isinstance(floor, str) else floor
@@ -64,7 +68,7 @@ class Flatline:
             self.floor += 1
 
     def needs_action(self):
-        if len(self.matches) < self.floor:
+        if self.matches < self.floor:
             return True
         return False
 
@@ -76,7 +80,12 @@ class Range:
     """
     types_required_options = frozenset(["min_threshold", "max_threshold"])
 
-    def __init__(self, matches, min_threshold, max_threshold, action_on_equals=False):
+    def __init__(self, matches, *args):
+        valid = True if args and len(args) else False
+        tmp_args = args[0] if valid else {}
+        min_threshold = tmp_args.get("min_threshold")
+        max_threshold = tmp_args.get("max_threshold")
+        action_on_equals = tmp_args.get("action_on_equals") if tmp_args.get("action_on_equals") else False
         self.min_threshold = int(min_threshold) if isinstance(min_threshold, str) else min_threshold
         self.max_threshold = int(max_threshold) if isinstance(max_threshold, str) else max_threshold
         self.action_on_equals = action_on_equals
@@ -86,7 +95,7 @@ class Range:
             self.max_threshold += 1
 
     def needs_action(self):
-        if self.min_threshold < len(self.matches) < self.max_threshold:
+        if self.min_threshold < self.matches < self.max_threshold:
             return True
         return False
 
@@ -94,24 +103,31 @@ class Range:
 class HistoricalRange:
     types_required_options = frozenset(["reference_window_matches", "current_window_matches", "compare_height", "compare_type"])
 
-    def __init__(self, reference_window_matches, current_window_matches, compare_height, compare_type="both", action_on_equals=False):
+    def __init__(self, *args):
+        valid = True if args and len(args) else False
+        tmp_args = args[0] if valid else {}
+        reference_window_matches = tmp_args.get("reference_window_matches")
+        current_window_matches = tmp_args.get("current_window_matches")
+        compare_height = tmp_args.get("compare_height")
+        compare_type = tmp_args.get("compare_type")
+        action_on_equals = tmp_args.get("action_on_equals") if tmp_args.get("action_on_equals") else False
         self.compare_type = compare_type
         self.compare_height = int(compare_height) if isinstance(compare_height, str) else compare_height
         self.ref_match = reference_window_matches
         self.cur_match = current_window_matches
-        self.cur_match_length = len(self.cur_match)
-        self.ref_match_length = len(self.ref_match)
+        self.cur_match_length = self.cur_match
+        self.ref_match_length = self.ref_match
         self.action_on_equals = action_on_equals
 
     def needs_action(self):
         met_up_condition, met_down_condition = False, False
-        if self.action_on_equals and self.cur_match_length >= self.ref_match_length * self.compare_height:
+        if self.action_on_equals and self.cur_match >= self.ref_match * self.compare_height:
             met_up_condition = True
-        elif self.cur_match_length > self.ref_match_length * self.compare_height:
+        elif self.cur_match > self.ref_match * self.compare_height:
             met_up_condition = True
-        if self.action_on_equals and self.cur_match_length * self.compare_height <= self.ref_match_length:
+        if self.action_on_equals and self.cur_match * self.compare_height <= self.ref_match:
             met_down_condition = True
-        elif self.cur_match_length * self.compare_height < self.ref_match_length:
+        elif self.cur_match * self.compare_height < self.ref_match:
             met_down_condition = True
         if self.compare_type == "up":
             if met_up_condition:

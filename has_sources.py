@@ -12,6 +12,7 @@ in attribute "get_query()" we have:
 
 import elasticsearch
 import logging
+import datetime
 
 
 class ElasticSearch:
@@ -48,6 +49,9 @@ class ElasticSearch:
         sort = tmp_args.get("sort") if tmp_args.get("sort") else False
         desc = tmp_args.get("desc") if tmp_args.get("desc") else False
         es_filters = {'filter': {'bool': {'must': filters}}}
+        start_time = tmp_args.get("start_time")
+        if start_time:
+            end_time = datetime.datetime.utcnow().isoformat()
         if start_time and end_time:
             es_filters['filter']['bool']['must'].insert(0, {'range': {"@timestamp": {'gt': start_time, 'lte': end_time}}})
         query = {'query': {'bool': es_filters}}
@@ -60,11 +64,13 @@ class ElasticSearch:
         tmp_args = args[0] if valid else {}
         index = tmp_args.get("index")
         size = tmp_args.get("size") if tmp_args.get("size") else 10000
-        count_query = tmp_args.get("count_query")
+        count_query = tmp_args.get("count_query") if tmp_args.get("count_query") else True
         if count_query:
-            results = conn.count(index=index, body=query, size=size, ignore_unavailable=True)
+            results = conn.count(index=index, body=query, ignore_unavailable=True)
+            results = int(results["count"])
         else:
             results = conn.search(index=index, body=query, size=size, ignore_unavailable=True)
+            results = int(results["hits"]["total"]["value"])
         return results
 
 
