@@ -1,7 +1,14 @@
+"""
+this module includes classes that define sources to read input from
+each class should have a variable "required_options" contains all required fields for verification process
+"""
+
 import elasticsearch
 
 
 class ElasticSearch:
+    required_options = frozenset(["es_host", "es_port"])
+
     def __init__(self, host, port, use_ssl=False, verfiy_certs=False, ca_certs=None, http_auth=None, timeout=10):
         self.host = host
         self.port = port

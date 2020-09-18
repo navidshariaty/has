@@ -15,8 +15,10 @@ def main():
     has_view.View(config_content, state, only_view_on_errors=True)
     if not state:
         exit(1)
-    hesabies, state = hesabs.load_hesabi_bodies(config_content.get("hesabi_path"))
+    hesabies, state = hesabs.load_hesabi_bodies(config_content.get("hesabies_path"))
     has_view.View(hesabies, state, only_view_on_errors=True)
+
+
 
 
 if __name__ == '__main__':
