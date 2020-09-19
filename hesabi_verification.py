@@ -135,6 +135,12 @@ class Verify:
                     return "You can not use field \"use_aggr_values\" while field \"agg_field\" is not defined.", False
                 elif str(action.get("use_aggr_values")) not in ["True", "False"]:
                     return "field \"use_aggr_values\" is boolean and only accepts [\"true\", \"false\"] but it's value is \"{}\" in hesabi \"{}\"".format(str(action.get("use_aggr_values")), self.path), False
+            if "replace_aggr_field" in action:
+                if "replace_variable_name" not in action:
+                    return "field \"replace_variable_name\" not in hesabi \"{}\" while field \"replace_aggr_field\" is defined.".format(self.path), False
+                if "replace_file_path" not in action:
+                    return "field \"replace_file_path\" not in hesabi \"{}\" while field \"replace_aggr_field\" is defined.".format(self.path), False
+
         return "", True
 
     def advanced_verify_pipe_type(self):

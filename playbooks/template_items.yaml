@@ -1,0 +1,13 @@
+- name: test1
+  hosts: '{{ the_hosts }}'
+  vars_files:
+  - "/home/navid/ansible/vars.yml"
+  become: true
+  remote_user: root
+  # no_log: true
+  # remote_user: debian
+  gather_facts: yes
+  tasks:
+  - name: executing shell command
+    shell: "{{ item }}"
+    with_items: "{{ commands }}"

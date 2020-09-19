@@ -35,6 +35,8 @@ from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 from socket import error
 import uuid
+from staticconf.loader import yaml_loader
+import yaml
 
 
 def lost_file_finder(files, exist_only=True, file_only=False):
@@ -75,12 +77,25 @@ class Ansible:
         self.method = tmp_args.get("method")
         self.adhoc_command = tmp_args.get("adhoc_command")
         self.inventory = tmp_args.get("inventory")
-        self.group = tmp_args.get("group")
+        self.group = tmp_args.get("group") if tmp_args.get("group") else "all"
         self.playbooks = tmp_args.get("playbooks")
-        self.replace_args_in_template = tmp_args.get("replace_args_in_template") if tmp_args.get("replace_args_in_template") else False
-        self.replace_variable = tmp_args.get("replace_variable")
+        self.remote_user = tmp_args.get("remote_user")
+        self.replace_aggr_field = tmp_args.get("replace_aggr_field") if tmp_args.get("replace_aggr_field") else False
+        self.replace_variable_name = tmp_args.get("replace_variable_name")
+        self.replace_file_path = tmp_args.get("replace_file_path")
 
         self.aggr_values = list(args[3][0])
+
+    def replace_field_in_field(self):
+        content = dict()
+        if os.path.isfile(self.replace_file_path):
+            try:
+                content = yaml_loader(self.replace_file_path)
+            except:
+                return "Could not load variables file \"{}\"".format(self.replace_file_path), False
+        content[self.replace_variable_name] = self.aggr_values
+        with open(self.replace_file_path, "w+") as file:
+            file.write(yaml.dump(content, allow_unicode=True))
 
     def action_checkup(self):
         if self.method == "ad_hoc":
@@ -123,9 +138,9 @@ class Ansible:
 
     def run_action(self):
         if self.method == "ad_hoc":
-            self.ad_hoc_action()
+            return self.ad_hoc_action()
         elif self.method == "playbook":
-            self.playbook_action()
+            return self.playbook_action()
 
     def write_results(self, start_unix_time, end_unix_time, action_completed, description):
         if self.method == "ad_hoc":
@@ -151,18 +166,28 @@ class Ansible:
         pass
 
     def ad_hoc_action(self):
-        string_template = ""
+        string_template = "ansible "
         if self.group:
             string_template += "{} ".format(self.group)
 
         if self.inventory:
-            string_template += "-i {}".format(self.inventory)
+            string_template += "-i {} ".format(self.inventory)
+
+        if self.remote_user:
+            string_template += "-u {} ".format(self.remote_user)
+        string_template += self.adhoc_command
+        status = os.system(string_template)
+        message = "Errors while running command \"{}\" from hesabi \"{}\"".format(string_template, self.path) if status else ""
+        return message, status
 
     def playbook_action(self):
+        self.replace_field_in_field()
         for playbook in self.playbooks:
             print("Executing Playbook {}".format(playbook))
             result = os.system("ansible-playbook {}".format(playbook))
-            print("Exited with errors") if result else print("Finished Successfully")
+            message = "Exited with errors" if result else "Finished Successfully"
+            return message, result
+
 
 
 class Email:

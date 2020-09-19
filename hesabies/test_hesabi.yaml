@@ -23,11 +23,15 @@ sources:
 #      "_id": "8Kvxm3QBhFswA17vazfv"
 
 agg_field: event.duration
-sources_operator: and
+sources_operator: or
 actions:
-- action: debug
-  use_aggr_values: false
-  command: "/home/navid/test.sh"
+- action: ansible
+  method: "playbook"
+  playbooks:
+  - /home/navid/ansible/playbooks/1.yaml
+  replace_aggr_field: true
+  replace_variable_name: second
+  replace_file_path: /home/navid/PycharmProjects/has/test_var.yaml
 
 pipe_type:
 - type: frequency

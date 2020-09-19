@@ -1,0 +1,17 @@
+- name: add a ghost shell script to remote servers and execute it
+  hosts: '{{ the_hosts }}'
+  remote_user: root
+  gather_facts: true
+  vars:
+    the_hosts: test
+    the_command: "ls -l"
+  tasks:
+  - name: copy file to remote server
+    copy:
+      src: /home/navid/test.sh
+      dest: /root/
+      mode: 0755
+  - name: execute the shell script
+    shell: "/root/test.sh 1 2 3 4"
+  - name: remove file
+    shell: "rm -rf /root/test.sh"
