@@ -18,9 +18,6 @@ sources:
   - metricbeat*
   agg_size: 90
   start_time: "2020-09-11T12:01:58.801Z"
-#  filters:
-#  - match:
-#      "_id": "8Kvxm3QBhFswA17vazfv"
 
 agg_field: event.duration
 sources_operator: or
@@ -31,7 +28,7 @@ actions:
   - /home/navid/ansible/playbooks/1.yaml
   replace_aggr_field: true
   replace_variable_name: second
-  replace_file_path: /home/navid/PycharmProjects/has/test_var.yaml
+  replace_file_path: /home/navid/PycharmProjects/has/test_hesabi_file.yaml
 
 pipe_type:
 - type: frequency

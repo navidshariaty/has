@@ -1,0 +1,4 @@
+the_hosts: pg
+commands:
+- ls
+- "uname -a"
