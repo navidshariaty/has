@@ -2,6 +2,11 @@ from hesabi_verification import sources_mapping, pipe_types_mapping, actions_map
 
 
 def source_handler(source):
+    """
+    this function loads one specific source from hesabi body , has a filter and queries db dependent on type and fetches the matching results
+    :param source: json loaded body of hesabi
+    :return: fetches matches that meet the filters and True
+    """
     source_instance = sources_mapping.get(source.get("source"))(source)
     conn = source_instance.get_connection()
     query = source_instance.get_query(None, None, source)
@@ -10,6 +15,12 @@ def source_handler(source):
 
 
 def sources_handler(hesabi_name, hesabi_body):
+    """
+    calls function "source_handler" multiple times for each source on hesabi body. also makes an statistics from all sources dependent on their names
+    :param hesabi_name:
+    :param hesabi_body:
+    :return:
+    """
     statistics = dict()
     all_matches = 0
     for source in hesabi_body.get("sources"):
@@ -49,12 +60,23 @@ def actions_handler(hesabi_name, hesabi_body, *args):
 
 
 def should_perform_aggr_query(hesabi_body):
+    """
+    this function specifies if we should go for agg field from sources or not
+    :param hesabi_body:
+    :return:
+    """
     if "agg_field" in hesabi_body:
         return True
     return False
 
 
 def aggr_field_handler(hesabi_name, hesabi_body):
+    """
+    this functinon handles the process of fetching agg_field from sources and also makes an statistics from each.calls "source_handler_aggr_field" multiple times on each source.
+    :param hesabi_name:
+    :param hesabi_body:
+    :return:
+    """
     # TODO : user should be able to define a pattern based on sources names : (e.g.   (name1 AND name2) OR name3)
     statistics = dict()
     operate_on_field = set()
@@ -81,6 +103,13 @@ def aggr_field_handler(hesabi_name, hesabi_body):
 
 
 def source_handler_aggr_field(source, agg_field):
+    """
+    handles the process of fetching data from source
+    makes a connection and a query and uses them to fetch data with passed filters
+    :param source: the hesabi body
+    :param agg_field: the name of the field we perform aggregation on
+    :return: the values of agg_field from matched events
+    """
     source_instance = sources_mapping.get(source.get("source"))(source)
     conn = source_instance.get_connection()
     query = source_instance.get_query_aggr_field(None, None, agg_field, source)

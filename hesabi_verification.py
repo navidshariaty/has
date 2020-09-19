@@ -96,6 +96,9 @@ class Verify:
     def advanced_verify_sources(self):
         all_names = []
         for source in self.body.get("sources"):
+            if "filters" in source:
+                if not isinstance(source.get("filters"), list):
+                    return "field \"filters\" should be of type list in hesabi \"{}\"".format(self.path), False
             if "name" not in source:
                 return "source does not contain name in hesabi {}".format(self.path), False
             if isinstance(source.get("name"), str):

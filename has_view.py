@@ -2,6 +2,10 @@ import sys
 
 
 class View:
+    """
+    this module receives data from controller module and views them based on the conditions we have
+    the model module returns data to controller module and the controller passes it to view
+    """
     def __init__(self, content, state, only_view_on_errors=False):
         self.content = content
         self.state = state

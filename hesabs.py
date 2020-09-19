@@ -4,9 +4,7 @@ in this module we will parse two kind of files that are too important for us
     name of this config file is passed to us in controller with "-c" or "--config"
     this file contains:
         :param:str hesabies_path(required)  =>  absolute path to directory that contains hesabi files
-        :param:list sources(required)       =>  a list of sources to read from with their details
-        :param:list actions(required)       =>  a list of actions with their details
-        :param:list pipe_type(required)     =>  a list with only one element, specifies the pipeline type to find out if actions should get triggered or not
+        :param logging_level(optional) => the level of HAS logger , default is INFO. set it to ERROR to only see errors and no more outputs
 2) hesabi files
 each hesabi is a yaml file with contents of
 """
@@ -16,6 +14,7 @@ import hesabi_verification
 
 
 def load_config(config_path):
+    """"""
     if not os.path.isfile(config_path):
         return "No such file {}".format(config_path), False
     try:

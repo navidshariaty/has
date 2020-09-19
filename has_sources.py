@@ -8,6 +8,11 @@ in attribute "get_query()" we have:
         :param filters
         :param sort
         :param desc
+
+    function get_connection is for making a simple connection to db and pass it later to func "get_results" to fetch datas
+    function get_result uses connection and query to fetch events and returns them (count query is prefered for lower overhead)
+    function get_query_aggr_field builds an aggregation query for later use in function "get_results_aggr_field"
+    function get_results_aggr_field uses the aggregation query to fetch agg_values
 """
 
 import elasticsearch
@@ -20,6 +25,11 @@ class ElasticSearch:
 
     @staticmethod
     def mute_elasticsearch():
+        """
+        modules "elasticsearch" and "requests" have their own loggers and sometimes their logs becomes annoying
+        so here we set higher levels to avoid them
+        :return:
+        """
         logging.getLogger('elasticsearch').setLevel(logging.CRITICAL)
         logging.getLogger("requests").setLevel(logging.WARNING)
         logging.getLogger("urllib3").setLevel(logging.WARNING)

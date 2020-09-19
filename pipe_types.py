@@ -76,7 +76,7 @@ class Flatline:
 class Range:
     """
     :param
-    if number of matched events is below a threshold , an action should get triggered
+    if number of matched events is not between two threshold(min_threshold, max_threshold) , an action should get triggered
     """
     types_required_options = frozenset(["min_threshold", "max_threshold"])
 
@@ -101,6 +101,12 @@ class Range:
 
 
 class HistoricalRange:
+    """
+    this class will compare two time windows and compare them
+    for example if you query between 10:00-12:00 =>  ref window(8:00-10:00) and cur window(10:00-12:00)
+    if the number of matches had a huge growth or reduce in cur window than ref window , an action should get triggered
+    this class is not working for now because the time window is not supported yet but you can specify it manually
+    """
     types_required_options = frozenset(["reference_window_matches", "current_window_matches", "compare_height", "compare_type"])
 
     def __init__(self, *args):

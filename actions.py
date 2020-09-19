@@ -40,6 +40,13 @@ import yaml
 
 
 def lost_file_finder(files, exist_only=True, file_only=False):
+    """
+    used for finding missing playbooks. defined as function for further use cases.
+    :param files:
+    :param exist_only:
+    :param file_only:
+    :return list_of_missing_files
+    """
     lost_files = list()
     for file in files:
         if file_only:
@@ -52,6 +59,12 @@ def lost_file_finder(files, exist_only=True, file_only=False):
 
 
 def find_inventories_group_hosts(inventory, group):
+    """
+    used to findout if the specified group in ansible ad_hoc exists inside inventory
+    :param inventory:
+    :param group:
+    :return: (list of hosts inside the group of given inventory, True) or ([], False) in case of errors
+    """
     try:
         data_loader = DataLoader()
         inventory = InventoryManager(loader=data_loader, sources=[inventory])
@@ -59,10 +72,6 @@ def find_inventories_group_hosts(inventory, group):
     except KeyError:
         return [], False
 
-
-def generate_tmp_file_name():
-    unique_id = str(uuid.uuid4()).replace("-", "")
-    return "/tmp/"+unique_id
 
 
 class Ansible:
@@ -87,6 +96,13 @@ class Ansible:
         self.aggr_values = list(args[3][0])
 
     def replace_field_in_field(self):
+        """
+        ansible uses this function to build files that contain variables and are used for ansible playbooks in case of
+        {hosts}
+        {single word variables}
+        {items list}
+        :return
+        """
         content = dict()
         if os.path.isfile(self.replace_file_path):
             try:
@@ -98,6 +114,9 @@ class Ansible:
             file.write(yaml.dump(content, allow_unicode=True))
 
     def action_checkup(self):
+        """
+            :return err_content, err_free
+        """
         if self.method == "ad_hoc":
             """
                 field "group" is optional so we only check the type if it is defined
@@ -215,7 +234,6 @@ class Email:
 
     def action_checkup(self):
         """
-        required options are [smtp_host, smtp_port, from_addr, to_addr]
         :return err_content, err_free
         """
         results = dict({"valid_username": True, "valid_password": True, "valid_use_ssl": True})
@@ -314,8 +332,13 @@ class Command:
         self.aggr_values = list(args[3][0])
 
     def action_checkup(self):
+        """
+            :return err_content, err_free
+        """
         if not isinstance(self.command, str):
             return "field \"command\" should be of type str.", False
+        if not self.command:
+            return "field \"command\" should not be empty.", False
         return "", True
 
     def run_action(self):
@@ -351,6 +374,9 @@ class Debug:
         self.aggr_values = list(args[3][0])
 
     def action_checkup(self):
+        """
+            :return err_content, err_free
+        """
         return "", True
 
     def run_action(self):

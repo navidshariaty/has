@@ -20,8 +20,8 @@ def build_logger():
     return logging.Logger("HAS")
 
 
-def handle_result_state(result, state, exit_on_errors=True):
-    has_view.View(result, state, only_view_on_errors=True)
+def handle_result_state(result, state, exit_on_errors=True, only_view_on_errors=True):
+    has_view.View(result, state, only_view_on_errors)
     if not state:
         if exit_on_errors:
             sys.exit()
@@ -34,6 +34,24 @@ def parse_args():
 
 
 def main():
+    """
+    this is the controller module
+    this modules uses handlers to communicate with model modules and contains these component
+    1) load hesabi bodies
+        in this section the list of files in the directory we read from config.yaml file is gathered and loaded from yaml to json
+    2) verify_hesabi
+        verifies each hesabi to make sure that each section(source, pipe_type, action) are totally safe by two (basic,advanced) verifiers.
+    now for each hesabi:
+    3) handle sources
+        each hesabi can have multiple sources, so we read and query and fetch results and returns the number of matching query
+    4) handle pipe_type
+        if the number of matching results meets the condition of pipe_type, we go for fetching agg_field and actions
+    4.5) fetch agg_fields
+        this is optional , you can read multiple data sources and aggregate on specified field and union or intersect them and return the result
+    5) handle actions
+        each hesabi can have multiple actions, this section triggers these actions
+    :return:
+    """
     args = parse_args()
     config_content, state = hesabs.load_config(args.config)
     handle_result_state(result=config_content, state=state)
