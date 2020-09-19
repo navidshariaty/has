@@ -25,10 +25,10 @@ actions:
 - action: ansible
   method: "playbook"
   playbooks:
-  - /home/navid/ansible/playbooks/1.yaml
+  - /home/has/example_playbooks/template_items.yaml
   replace_aggr_field: true
   replace_variable_name: second
-  replace_file_path: /home/navid/PycharmProjects/has/test_hesabi_file.yaml
+  replace_file_path: /home/has/test_hesabi_file.yaml
 
 pipe_type:
 - type: frequency
