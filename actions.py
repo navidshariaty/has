@@ -60,7 +60,7 @@ def find_inventories_group_hosts(inventory, group):
 class Ansible:
     action_required_options = frozenset([])
 
-    def __init__(self, *args):
+    def __init__(self, aggr_values=None, *args):
         valid = True if (args and len(args) and isinstance(args[0], dict)) else False
         tmp_args = args[0] if valid else {}
         self.method = tmp_args.get("method")
@@ -68,6 +68,9 @@ class Ansible:
         self.inventory = tmp_args.get("inventory")
         self.group = tmp_args.get("group")
         self.playbooks = tmp_args.get("playbooks")
+        self.replace_args_in_template = tmp_args.get("replace_args_in_template") if tmp_args.get("replace_args_in_template") else False
+        self.replace_variable = tmp_args.get("replace_variable")
+        self.aggr_values = aggr_values
 
     def action_checkup(self):
         if self.method == "ad_hoc":

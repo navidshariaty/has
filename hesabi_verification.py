@@ -114,6 +114,11 @@ class Verify:
             if "agg_field" in source:
                 if "agg_field" not in self.body:
                     return "field \"agg_field\" specified in source \"{}\" of hesabi \"{}\" but not in the body.".format(source.get("name"), self.path), False
+            if "agg_field" in self.body:
+                if "sources_operator" not in self.body:
+                    return "agg_field is used but field \"sources_operator\" is not defined in hesabi body \"{}\"".format(self.path), False
+                if self.body.get("sources_operator") not in ["and", "or"]:
+                    return "field \"sources_operator\" should be [\"yes\",\"no\"], while is \"{}\" in hesabi body \"{}\"".format(self.body.get("sources_operator"), self.path), False
         return "", True
 
     def advanced_verify_actions(self):

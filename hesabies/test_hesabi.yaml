@@ -16,14 +16,14 @@ sources:
   es_port: 9200
   index:
   - metricbeat*
-  agg_size: 20
+  agg_size: 90
   start_time: "2020-09-11T12:01:58.801Z"
 #  filters:
 #  - match:
 #      "_id": "8Kvxm3QBhFswA17vazfv"
 
 #agg_field: event.duration
-
+#sources_operator: and
 actions:
 - action: debug
 

@@ -43,16 +43,29 @@ def should_perform_aggr_query(hesabi_body):
 
 
 def aggr_field_handler(hesabi_name, hesabi_body):
+    # TODO : user should be able to define a pattern based on sources names : (e.g.   (name1 AND name2) OR name3)
     statistics = dict()
-    union_on_field = set()
+    operate_on_field = set()
+    counter = 0
     agg_field_value = hesabi_body.get("agg_field")
     for source in hesabi_body.get("sources"):
         result, state = source_handler_aggr_field(source, agg_field_value)
         if not state:
             return statistics, result, state
         statistics.update({source.get("name"): result})
-        union_on_field = union_on_field.union(set(result))
-    return statistics, union_on_field, True
+    if hesabi_body.get("sources_operator") == "or":
+        for key in statistics.values():
+            tmp_union = set(key)
+            operate_on_field = operate_on_field.union(tmp_union)
+    elif hesabi_body.get("sources_operator") == "and":
+        for key in statistics.values():
+            if counter == 0:
+                operate_on_field = set(key)
+                counter += 1
+            else:
+                tmp_inter = set(key)
+                operate_on_field = operate_on_field.intersection(tmp_inter)
+    return statistics, operate_on_field, True
 
 
 def source_handler_aggr_field(source, agg_field):

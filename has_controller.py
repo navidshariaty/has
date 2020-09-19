@@ -65,6 +65,7 @@ def main():
 
         if has_handlers.should_perform_aggr_query(hesabi_body=hesabies.get(hesabi)):
             statistics, result, state = has_handlers.aggr_field_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
+            print(result)
         # result = has_handlers.actions_handler(hesabi, result)
         logger.warning("[ * ] actions triggered.")
 
