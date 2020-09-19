@@ -61,13 +61,17 @@ def main():
         result = has_handlers.pipe_type_handler(hesabi, hesabies.get(hesabi), result)
         handle_result_state("an action was not needed.", result, exit_on_errors=False)
         logger.warning("[ * ] pipe_type processing completed.")
-        logger.warning("[  ] triggering actions started.")
+        if result:
+            logger.warning("[  ] triggering actions started.")
 
-        if has_handlers.should_perform_aggr_query(hesabi_body=hesabies.get(hesabi)):
-            statistics, result, state = has_handlers.aggr_field_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
-            print(result)
-        # result = has_handlers.actions_handler(hesabi, result)
-        logger.warning("[ * ] actions triggered.")
+            if has_handlers.should_perform_aggr_query(hesabi_body=hesabies.get(hesabi)):
+                statistics, result, state = has_handlers.aggr_field_handler(hesabi_name=hesabi, hesabi_body=hesabies.get(hesabi))
+                handle_result_state(result=result, state=state)
+            else:
+                statistics, result, state = {}, [], True
+            result, state = has_handlers.actions_handler(hesabi, hesabies.get(hesabi), result)
+            handle_result_state(result, state)
+            logger.warning("[ * ] actions triggered.")
 
 
 if __name__ == '__main__':

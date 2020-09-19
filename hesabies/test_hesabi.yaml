@@ -22,10 +22,12 @@ sources:
 #  - match:
 #      "_id": "8Kvxm3QBhFswA17vazfv"
 
-#agg_field: event.duration
-#sources_operator: and
+agg_field: event.duration
+sources_operator: and
 actions:
 - action: debug
+  use_aggr_values: false
+  command: "/home/navid/test.sh"
 
 pipe_type:
 - type: frequency

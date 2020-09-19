@@ -130,6 +130,11 @@ class Verify:
             for field in actions_mapping.get(action.get("action")).action_required_options:
                 if field not in action:
                     return "field \"{}\" is required and not specified in hesabi \"{}\" actions.".format(field, self.path), False
+            if "use_aggr_values" in action:
+                if "agg_field" not in self.body:
+                    return "You can not use field \"use_aggr_values\" while field \"agg_field\" is not defined.", False
+                elif str(action.get("use_aggr_values")) not in ["True", "False"]:
+                    return "field \"use_aggr_values\" is boolean and only accepts [\"true\", \"false\"] but it's value is \"{}\" in hesabi \"{}\"".format(str(action.get("use_aggr_values")), self.path), False
         return "", True
 
     def advanced_verify_pipe_type(self):

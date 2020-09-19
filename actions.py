@@ -34,6 +34,7 @@ from smtplib import *
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 from socket import error
+import uuid
 
 
 def lost_file_finder(files, exist_only=True, file_only=False):
@@ -57,12 +58,20 @@ def find_inventories_group_hosts(inventory, group):
         return [], False
 
 
-class Ansible:
-    action_required_options = frozenset([])
+def generate_tmp_file_name():
+    unique_id = str(uuid.uuid4()).replace("-", "")
+    return "/tmp/"+unique_id
 
-    def __init__(self, aggr_values=None, *args):
-        valid = True if (args and len(args) and isinstance(args[0], dict)) else False
-        tmp_args = args[0] if valid else {}
+
+class Ansible:
+    action_required_options = frozenset(["method"])
+
+    def __init__(self, *args):
+        self.path = args[0]
+        self.body = args[1]
+
+        valid = True if (args and len(args) and isinstance(args[2], dict)) else False
+        tmp_args = args[2] if valid else {}
         self.method = tmp_args.get("method")
         self.adhoc_command = tmp_args.get("adhoc_command")
         self.inventory = tmp_args.get("inventory")
@@ -70,7 +79,8 @@ class Ansible:
         self.playbooks = tmp_args.get("playbooks")
         self.replace_args_in_template = tmp_args.get("replace_args_in_template") if tmp_args.get("replace_args_in_template") else False
         self.replace_variable = tmp_args.get("replace_variable")
-        self.aggr_values = aggr_values
+
+        self.aggr_values = list(args[3][0])
 
     def action_checkup(self):
         if self.method == "ad_hoc":
@@ -159,8 +169,11 @@ class Email:
     action_required_options = frozenset(["smtp_host", "smtp_port", "from_addr", "to_addr", "title"])
 
     def __init__(self, *args):
-        valid = True if (args and len(args) and isinstance(args[0], dict)) else False
-        tmp_args = args[0] if valid else {}
+        self.path = args[0]
+        self.body = args[1]
+
+        valid = True if (args and len(args) and isinstance(args[2], dict)) else False
+        tmp_args = args[2] if valid else {}
         self.to_addr = tmp_args.get("to_addr")
         self.host = tmp_args.get("smtp_host")
         self.port = tmp_args.get("smtp_port")
@@ -171,6 +184,9 @@ class Email:
         self.title = tmp_args.get("title")
         self.cert_file = tmp_args.get("cert_file")
         self.key_file = tmp_args.get("key_file")
+
+        self.aggr_values = list(args[3][0])
+        self.body = str(self.aggr_values) if self.aggr_values else "Hesabi {} Triggered".format(self.path)
 
     def action_checkup(self):
         """
@@ -215,8 +231,7 @@ class Email:
         return "", True
 
     def run_action(self):
-        body = "HESABI TRIGGER"
-        email_msg = MIMEText(body, _charset='UTF-8')
+        email_msg = MIMEText(self.body, _charset='UTF-8')
         email_msg['Subject'] = self.title
         email_msg['To'] = self.to_addr
         email_msg['From'] = self.from_addr
@@ -263,17 +278,27 @@ class Command:
     action_required_options = frozenset(["command"])
 
     def __init__(self, *args):
-        valid = True if (args and len(args) and isinstance(args[0], dict)) else False
-        tmp_args = args[0] if valid else {}
+        self.path = args[0]
+        self.body = args[1]
+
+        valid = True if (args and len(args) and isinstance(args[2], dict)) else False
+        tmp_args = args[2] if valid else {}
         self.command = tmp_args.get("command")
+        self.use_aggr_values = tmp_args.get("use_aggr_values")
+
+        self.aggr_values = list(args[3][0])
 
     def action_checkup(self):
-        if not isinstance(self.command, list):
-            return "field \"command\" should be of type list.", False
+        if not isinstance(self.command, str):
+            return "field \"command\" should be of type str.", False
         return "", True
 
     def run_action(self):
-        status = os.system(command=self.command)
+        aggr_values_as_string = ""
+        for value in self.aggr_values:
+            aggr_values_as_string += " {}".format(value)
+        extra_args = aggr_values_as_string if self.use_aggr_values else ""
+        status = os.system(command=self.command+extra_args)
         message = "Problems while running command \"{}\"".format(self.command) if status else ""
         return message, status
 
@@ -292,8 +317,13 @@ class Command:
 class Debug:
     action_required_options = frozenset([])
 
-    def __init__(self):
+    def __init__(self, *args):
+        self.path = args[0]
+        self.body = args[1]
+
         self.debug = True
+
+        self.aggr_values = list(args[3][0])
 
     def action_checkup(self):
         return "", True

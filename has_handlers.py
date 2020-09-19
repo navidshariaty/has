@@ -1,4 +1,4 @@
-from hesabi_verification import sources_mapping, pipe_types_mapping
+from hesabi_verification import sources_mapping, pipe_types_mapping, actions_mapping
 
 
 def source_handler(source):
@@ -28,12 +28,24 @@ def pipe_type_handler(hesabi_name, hesabi_body, matches):
     return state
 
 
-def action_handler(hesabi, matches):
-    pass
+def action_handler(hesabi_name, hesabi_body, action_body, *args):
+    agg_values = args[0] if args and args[0] else []
+    instance_action = actions_mapping.get(action_body.get("action"))(hesabi_name, hesabi_body, action_body, agg_values)
+    result, status = instance_action.action_checkup()
+    if not status:
+        return result, status
+    result, status = instance_action.run_action()
+    if not status:
+        return result, status
+    return "", True
 
 
-def actions_handler(hesabi, matches):
-    return True
+def actions_handler(hesabi_name, hesabi_body, *args):
+    for action in hesabi_body.get("actions"):
+        result, state = action_handler(hesabi_name, hesabi_body, action, args)
+        if not state:
+            return result, state
+    return "", True
 
 
 def should_perform_aggr_query(hesabi_body):

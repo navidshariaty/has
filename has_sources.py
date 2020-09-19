@@ -20,8 +20,9 @@ class ElasticSearch:
 
     @staticmethod
     def mute_elasticsearch():
-        es_logger = logging.getLogger('elasticsearch')
-        es_logger.setLevel(logging.WARNING)
+        logging.getLogger('elasticsearch').setLevel(logging.CRITICAL)
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
 
     def __init__(self, *args):
         valid = True if args and len(args) else False
