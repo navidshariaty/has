@@ -34,7 +34,6 @@ from smtplib import *
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
 from socket import error
-import uuid
 from staticconf.loader import yaml_loader
 import yaml
 
@@ -71,7 +70,6 @@ def find_inventories_group_hosts(inventory, group):
         return inventory.get_groups_dict()[group], True
     except KeyError:
         return [], False
-
 
 
 class Ansible:

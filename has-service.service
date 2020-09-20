@@ -1,0 +1,14 @@
+[Unit]
+Description=HAS (Hesabi Alerting System)
+
+[Service]
+Type=forking
+User=root
+Group=root
+ExecStart=/etc/init.d/has-service start
+ExecStop=/etc/init.d/has-service stop
+# Restart=always
+
+[Install]
+WantedBy=multi-user.target
+

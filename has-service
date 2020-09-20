@@ -1,0 +1,35 @@
+#!/bin/bash
+
+do_start() {
+    python3 /home/has/has_api.py &
+    deactivate
+}
+
+do_stop() {
+    api_pid=`ps -aux | grep "has_api.py" | grep -v grep | awk '{print $2}'`
+    kill -9 $api_pid
+}
+
+case "$1" in
+  start)
+    do_start
+    exit 0
+    ;;
+  stop)
+    do_stop
+    exit 0
+    ;;
+  # status)
+  #   do_status
+  #   exit 0
+  #   ;;
+  restart)
+    do_stop
+    do_start
+    exit 0
+    ;;
+  *)
+    echo "Usage: $SCRIPTNAME {start|stop|status|restart}" >&2
+    exit 3
+    ;;
+esac
